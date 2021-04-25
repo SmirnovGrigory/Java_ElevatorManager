@@ -4,13 +4,16 @@ public class Main {
 
     public static void main(String[] args) {
 	// write your code here
-        ElevatorManager M = new ElevatorManager();
-        for (int i=0; i<5;i++){
-           Request r = M.generateRequest(10);
-           System.out.println(r.getFloor());
-           System.out.println(r.getDestination());
-           System.out.println(r.getDirection());
-           System.out.println();
-        }
+        ElevatorManager M = new ElevatorManager(2,10,5);
+
+        M.getElevators()[0].printInfo();
+        M.getElevators()[1].printInfo();
+
+        M.generateStartRequests(5);
+        System.out.println(M.allRequests.size());
+        M.run(40);
+        M.getElevators()[0].printInfo();
+        M.getElevators()[1].printInfo();
+        System.out.println(M.allRequests.size());
     }
 }
