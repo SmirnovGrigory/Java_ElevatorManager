@@ -7,27 +7,30 @@ import java.util.List;
 public class Elevator {
     private int currentFloor;
     private final int maxCapacity;
+    private final int numberOfFloors;
     private int direction=1;
     private List<Request> passengers;
     ElevatorManager myManager;
 
-    public Elevator(int currentFloor, int maxCapacity, ElevatorManager myManager ) {
+    public Elevator(int currentFloor, int maxCapacity, int numberOfFloors, ElevatorManager myManager ) {
         this.maxCapacity = maxCapacity;
         this.currentFloor = currentFloor;
+        this.numberOfFloors=numberOfFloors;
         this.myManager = myManager;
         passengers = new ArrayList<Request>();
     }
 
     public void findNearestRequestAndSetDirection() { //should be synchronized
-
         int minDistance=-1;
-        for (Request r: myManager.allRequests) {
-            if (minDistance==-1 || Math.abs(currentFloor - r.getFloor())<minDistance) {
-                minDistance = Math.abs(currentFloor - r.getFloor());
-                if (r.getFloor()>currentFloor)
-                    direction=1;
-                else
-                    direction=0;
+        synchronized (myManager.allRequests) {
+            for (Request r : myManager.allRequests) {
+                if (minDistance == -1 || Math.abs(currentFloor - r.getFloor()) < minDistance) {
+                    minDistance = Math.abs(currentFloor - r.getFloor());
+                    if (r.getFloor() > currentFloor)
+                        direction = 1;
+                    else
+                        direction = 0;
+                }
             }
         }
     }
@@ -38,16 +41,18 @@ public class Elevator {
 
     public void takePassenger() { //should be synchronized
         List<Request> forRemoving = new ArrayList<Request>();
-        for (Request r: myManager.allRequests)
-            if (r.getFloor() == currentFloor && (r.getDirection() == direction || passengers.size() == 0) && passengers.size()<maxCapacity) {
-                if (passengers.size() == 0)
-                    direction=r.getDirection();
-                passengers.add(r);
-                //myManager.allRequests.remove(r);
-                forRemoving.add(r);
-            }
-        if (forRemoving.size()!=0)
-            myManager.allRequests.removeIf(forRemoving::contains);
+        synchronized (myManager.allRequests) {
+            for (Request r : myManager.allRequests)
+                if (r.getFloor() == currentFloor && (r.getDirection() == direction || passengers.size() == 0) && passengers.size() < maxCapacity) {
+                    if (passengers.size() == 0)
+                        direction = r.getDirection();
+                    passengers.add(r);
+                    //myManager.allRequests.remove(r);
+                    forRemoving.add(r);
+                }
+            if (forRemoving.size() != 0)
+                myManager.allRequests.removeIf(forRemoving::contains);
+        }
     }
 
     public void printInfo() {
@@ -62,12 +67,10 @@ public class Elevator {
         if (passengers.size() == 0)
             findNearestRequestAndSetDirection();
 
-        if (direction == 0 && currentFloor!=1)
+        if (direction == 0 && currentFloor != 1)
             currentFloor--;
-        if (direction == 1)
+        if (direction == 1 && currentFloor != numberOfFloors)
             currentFloor++;
         debark();
-        //if (passengers.size() < maxCapacity)
-          //  takePassenger();
     }
 }

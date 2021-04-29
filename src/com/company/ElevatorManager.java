@@ -5,13 +5,13 @@ import java.util.*;
 public class ElevatorManager {
     private Elevator[] elevators;
     private final int numberOfFloors;
-    public List<Request> allRequests;
+    public volatile List<Request> allRequests;
 
     public ElevatorManager(int numberOfElevators, int numberOfFloors, int maxCapacity ) {
         this.numberOfFloors=numberOfFloors;
         elevators = new Elevator[numberOfElevators];
         for (int i=0;i<numberOfElevators;i++)
-            elevators[i] = new Elevator(1, maxCapacity, this);
+            elevators[i] = new Elevator(1, maxCapacity, numberOfFloors, this);
         allRequests = new ArrayList<Request>();
     }
 
